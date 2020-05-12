@@ -1,0 +1,20 @@
+{% extends "index.html" %}
+{% block content %}
+{% load static %}
+
+{% load render_table from django_tables2 %}
+
+<h2>Transactions</h2>
+<div class="border-top pt-3">
+    <small class="text-muted">
+        <a href="{% url 'business_home' %}">Back to Home Page</a>
+    </small>
+</div>
+
+<a class="btn btn-warning" href="/export/transaction/" role="button">Export</a>
+<a class="btn btn-success" href="/business/analysis/" role="button">Analysis</a>
+<br><br>
+
+<p> {% render_table transactions %}</p>
+
+{% endblock content %}

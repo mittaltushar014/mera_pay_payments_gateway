@@ -1,0 +1,35 @@
+{% extends "individual_index.html" %}
+{% block content %}
+{% load static %}
+<h2>Analysis</h2>
+<div class="border-top pt-3">
+    <small class="text-muted">
+        <a href="{% url 'home_individual' %}">Back to Home Page</a>
+    </small>
+</div>
+    <a class="btn btn-warning" href="/customers/individual/export/transaction/" role="button">Export</a>
+    <a class="btn btn-success" href="/customers/individual/transaction/" role="button">Transactions</a>
+    <br><br>
+
+
+    <h2>
+      <small class="text-muted">Day wise payments</small>
+    </h2>
+
+    {{ daywise|safe }}
+
+
+    <h2>
+      <small class="text-muted">Day wise number of payments</small>
+    </h2>
+
+    {{ service_per_month|safe }}
+
+    <h2>
+      <small class="text-muted">Number of times services used</small>
+    </h2>
+
+    {{ number_times_service|safe }}    
+  
+
+{% endblock content %}

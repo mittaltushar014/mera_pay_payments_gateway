@@ -1,0 +1,34 @@
+{% extends "index.html" %}
+{% block content %}
+<!-- {% load static %} -->
+<h2>Business Home</h2>
+
+<div style="display : flex">
+    Services subscribed:<br><hr>
+    <br>
+    <form action="/business/service_add/" method="post"> 
+    {% csrf_token %}
+      <div class="form-group">
+        <label for="exampleFormControlSelect1">Add Service</label>
+        <select class="form-control" id="category" name="service" required>
+          {% for ser in service_list %}
+            <option>{{ ser.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-success">Add</button>
+    </form>  
+
+    {% for ser in services %}
+    <div class="card" style="width: 18rem; margin-left:20px;">
+      <img src="{{ser.image.url}}" class="card-img-top" alt="Image not found" height="200" width="200">
+      <div class="card-body">
+        <h5 class="card-title">{{ser.name}}</h5>
+        <p class="card-text">{{ser.name}} is for electronics,home appliances</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  
+
+{% endblock content %}
