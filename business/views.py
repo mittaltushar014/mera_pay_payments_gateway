@@ -350,6 +350,7 @@ def business_analysis(request):
     x1_data = []
     y1_data = []
 
+    #transactions filtering
     transactions = Transaction.objects.filter(
         to=BusinessProfile.objects.filter(user=request.user).first()).order_by('date')
 
