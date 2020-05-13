@@ -13,9 +13,11 @@
   <title>Mera Pay</title>
 
   <!-- Custom fonts for this template-->
-  <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js "></script>
   <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
-
+  <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
+  
+  
   <!-- Custom styles for this template-->
     <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet">
     <style>
@@ -276,9 +278,9 @@
             <div class="card-body dropdown">
               <button class="dropbtn">Pay</button>
               <div class="dropdown-content" >
-                <a href="{% url 'pay_link' ser.0 ser.1 ser.4 payment_type.0 %}">Payments Wallet</a>       
-                <a href="{% url 'pay_link' ser.0 ser.1 ser.4 payment_type.1 %}">Payments creditcard</a>
-                <a href="{% url 'pay_link' ser.0 ser.1 ser.4 payment_type.2 %}">Payments debicard</a>
+                <button onclick="loadwallet('{{ser.0}}', '{{ser.1}}', '{{ser.4}}', '{{payment_type.0}}')">Wallet</button>
+                <button onclick="loadcredit('{{ser.0}}', '{{ser.1}}', '{{ser.4}}', '{{payment_type.1}}')">Credit Card</button>
+                <button onclick="loaddebit('{{ser.0}}', '{{ser.1}}', '{{ser.4}}', '{{payment_type.2}}')">Debit Card</button>
               </div>
             </div>
             </div> 
@@ -315,6 +317,71 @@
       </div>
     </div>
   </div>
+
+ <script>
+   function loadwallet(service_name, service_owner, service_price, payment_type) {
+     $.ajax({
+       type: "GET",
+       url: "/pay_link/",
+       data: {
+         'service_name': service_name, 'service_owner': service_owner,
+         'service_price': service_price, 'payment_type': payment_type
+       },
+       success: function () {
+         console.log(service_name)
+         console.log(service_owner)
+         console.log(service_price)
+         console.log(payment_type)
+         top.location.href = '/pay_link/?service_name=' + service_name + '&service_owner=' + service_owner + '&service_price=' + service_price + '&payment_type=' + payment_type
+       },
+       error: function () {
+         console.log('error')
+       }
+     });
+   }
+
+   function loadcredit(service_name, service_owner, service_price, payment_type) {
+      $.ajax({
+        type: "GET",
+        url: "/pay_link",
+        data: {
+          'service_name': service_name, 'service_owner': service_owner,
+          'service_price': service_price, 'payment_type': payment_type
+        },
+        success: function () {
+          console.log(service_name)
+          console.log(service_owner)
+          console.log(service_price)
+          console.log(payment_type)
+          top.location.href = '/pay_link/?service_name=' + service_name + '&service_owner=' + service_owner + '&service_price=' + service_price + '&payment_type=' + payment_type
+        },
+        error: function (e) {
+          console.log('Error: ' + e)
+        }
+      });
+    }
+
+    function loaddebit(service_name, service_owner, service_price, payment_type) {
+        $.ajax({
+          type: "GET",
+          url: "/pay_link",
+          data: {
+            'service_name': service_name, 'service_owner': service_owner,
+            'service_price': service_price, 'payment_type': payment_type
+          },
+          success: function () {
+            console.log(service_name)
+            console.log(service_owner)
+            console.log(service_price)
+            console.log(payment_type)
+            top.location.href = '/pay_link/?service_name=' + service_name + '&service_owner=' + service_owner + '&service_price=' + service_price + '&payment_type=' + payment_type
+          },
+          error: function (e) {
+            console.log('Error: ' +e)
+          }
+        });
+      }
+ </script>
 
   <!-- Bootstrap core JavaScript-->
   <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>

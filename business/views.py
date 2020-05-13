@@ -21,6 +21,7 @@ from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from customers.views import index_individual, individual_transaction
+from urllib.parse import urlencode
 
 import csv
 import random
@@ -277,12 +278,27 @@ def export_transaction(request):
 
 
 @login_required
-def pay_link(request, service_name, service_owner, service_price, payment_type):
+def pay_link(request):
+
+    service_name = request.GET.get('service_name')
+    service_owner = request.GET.get('service_owner')
+    service_price = request.GET.get('service_price')
+    payment_type = request.GET.get('payment_type')
+
+    end_point = 'http://127.0.0.1:8000/pay_link/?'
+    link_dict = {'service_name': service_name, 'service_owner': service_owner,
+                 'service_price': service_price, 'payment_type': payment_type}
+    link = end_point + urlencode(link_dict)
+
+    return render(request, 'payment.html', {'link': link, 'service_name': service_name, 'service_owner': service_owner, 'service_price': service_price, 'payment_type': payment_type})
+
+
+@login_required
+def individual_pay(request, service_name, service_owner, service_price, payment_type):
     # For paying to the business by individual
 
     service_owner = str(service_owner)
 
-    # deduct balance
     logged_in_user = User.objects.filter(
         username=request.user.username).first()
 
@@ -321,7 +337,6 @@ def pay_link(request, service_name, service_owner, service_price, payment_type):
 
     logged_in_user = User.objects.filter(
         username=request.user.username).first()
-    balance = 10
 
     messages.success(request, 'Payment successful!')
     return redirect('individual_transaction')

@@ -25,8 +25,9 @@ urlpatterns = [
          name="business_transaction"),
     path('business/analysis/', views.business_analysis, name="business_analysis"),
     path('business/profile/', views.business_profile, name='business_profile'),
-    path('pay_individual/<str:service_name>/<str:service_owner>/<int:service_price>/<str:payment_type>/',
-         views.pay_link, name='pay_link'),
+    path('pay_link/', views.pay_link, name='pay_link'),
+    path('individual_pay/<str:service_name>/<str:service_owner>/<int:service_price>/<str:payment_type>/',
+         views.individual_pay, name='individual_pay'),
 
     path('business/404/', views.e_404, name='404'),
     path('business/403/', views.e_403, name='403'),
