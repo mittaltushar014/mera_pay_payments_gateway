@@ -13,6 +13,7 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from random import randint
 from django.utils import timezone
+import datetime
 from decimal import Decimal
 
 from .serializers import ProfileSerializer, BusinessProfileSerializer
@@ -38,7 +39,7 @@ otp = 0
 
 def home(request):
     # For rendering to home
-
+    
     return render(request, 'home.html')
 
 
@@ -250,35 +251,8 @@ def business_service_add(request):
 
 
 @login_required
-def business_transaction(request):
-    # For business transactions table rendering
-
-    transactions = Transaction.objects.filter(to=BusinessProfile.objects.filter(
-        user=request.user).first()).order_by('-date', '-time')
-    #messages.success(request, "Welcome to the transactions page!")
-    return render(request, 'business_transaction.html', locals())
-
-
-@login_required
-def export_transaction(request):
-    # For exporting transactions
-
-    response = HttpResponse(content_type='text/csv')
-
-    writer = csv.writer(response)
-    writer.writerow(['From', 'To', 'Amount', 'Service', 'Date', 'Time'])
-
-    for transaction in Transaction.objects.select_related('by', 'to', 'service').filter(to=BusinessProfile.objects.filter(user=request.user).first()).values_list('by__username', 'to__business_name', 'amount', 'service__name', 'date', 'time'):
-        writer.writerow(transaction)
-
-    response['Content-Disposition'] = 'attachment;filename="transactions.csv"'
-    messages.success(
-        request, "Your transactions file was downloaded successfully!")
-    return response
-
-
-@login_required
 def pay_link(request):
+    #For pay link generation
 
     service_name = request.GET.get('service_name')
     service_owner = request.GET.get('service_owner')
@@ -295,7 +269,7 @@ def pay_link(request):
 
 @login_required
 def individual_pay(request, service_name, service_owner, service_price, payment_type):
-    # For paying to the business by individual
+    #For paying to the business by individual
 
     service_owner = str(service_owner)
 
@@ -343,14 +317,42 @@ def individual_pay(request, service_name, service_owner, service_price, payment_
 
 
 @login_required
+def business_transaction(request):
+    # For business transactions table rendering
+
+    transactions = Transaction.objects.filter(to=BusinessProfile.objects.filter(
+        user=request.user).first()).order_by('-date', '-time')
+    messages.success(request, "Welcome to the transactions page!")
+    return render(request, 'business_transaction.html', locals())
+
+
+@login_required
+def export_transaction(request):
+    # For exporting transactions
+
+    response = HttpResponse(content_type='text/csv')
+
+    writer = csv.writer(response)
+    writer.writerow(['From', 'To', 'Amount', 'Service', 'Date', 'Time'])
+
+    for transaction in Transaction.objects.select_related('by', 'to', 'service').filter(to=BusinessProfile.objects.filter(user=request.user).first()).values_list('by__username', 'to__business_name', 'amount', 'service__name', 'date', 'time'):
+        writer.writerow(transaction)
+
+    response['Content-Disposition'] = 'attachment;filename="transactions.csv"'
+    messages.success(
+        request, "Your transactions file was downloaded successfully!")
+    return response
+
+
+@login_required
 def business_analysis(request):
     # For business analyis charts rendering
 
-    # daywise
+
+    # day_wise_earning
     x1_data = []
     y1_data = []
 
-    #transactions filtering
     transactions = Transaction.objects.filter(
         to=BusinessProfile.objects.filter(user=request.user).first()).order_by('date')
 
@@ -361,7 +363,46 @@ def business_analysis(request):
     fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Day", 'y': 'Amount'})
     daywise = fig.to_html(full_html=False)
 
-    # no_of_services_per_month
+
+    #service_wise_earning
+    x1_data = []
+    y1_data = []
+  
+    transactions_business = Transaction.objects.select_related('by', 'to', 'service').filter(to=BusinessProfile.objects.filter(user=request.user).first()).values_list('by__username', 'to__business_name', 'amount', 'service__name', 'date', 'time')
+    
+    service_wise_earning ={}
+
+    for transaction in transactions_business:
+        if transaction[3] not in service_wise_earning.keys():
+            service_wise_earning[transaction[3]] = transaction[2]
+        else:
+            service_wise_earning[transaction[3]] += transaction[2]
+
+    x1_data = list(service_wise_earning.keys())
+    y1_data = list(service_wise_earning.values())
+
+    fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Service", 'y': 'Amount'})
+    service_earning = fig.to_html(full_html=False)
+
+
+    #month_wise_earning
+    month_wise_earning ={}
+
+    for transaction in transactions_business:
+        if transaction[4].month not in month_wise_earning.keys():
+            month_name = datetime.date(2020, transaction[4].month, 1).strftime('%B')
+            month_wise_earning[month_name] = transaction[2]
+        else:
+            month_wise_earning[month_name] += transaction[2]        
+
+    x1_data = list(month_wise_earning.keys())
+    y1_data = list(month_wise_earning.values())
+
+    fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Month", 'y': 'Amount'})
+    month_earning = fig.to_html(full_html=False)
+
+
+    #day_wise_traffic
     x1_data = []
     y1_data = []
 
@@ -378,10 +419,11 @@ def business_analysis(request):
     x1_data = list(no_of_services_per_month_dict.keys())
     y1_data = list(no_of_services_per_month_dict.values())
 
-    fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Day", 'y': 'Times'})
+    fig = px.line(x=x1_data, y=y1_data, labels={'x': "Day", 'y': 'Times'})
     service_per_month = fig.to_html(full_html=False)
 
-    # no_of_times_each_service_used
+
+    #service_wise_traffic
     x1_data = []
     y1_data = []
 
@@ -401,13 +443,41 @@ def business_analysis(request):
     x1_data = list(no_of_times_each_service_used_dict.keys())
     y1_data = list(no_of_times_each_service_used_dict.values())
 
-    fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Day", 'y': 'Amount'})
+    fig = px.pie(values=y1_data, names=x1_data)
     number_times_service = fig.to_html(full_html=False)
 
+
+    #service_wise_subscribers
+    service_wise_subscribers ={}
+    temp_subscribers=[]
+
+    for transaction in transactions_business:
+        if transaction[3] not in service_wise_subscribers.keys():
+            if transaction[0] not in temp_subscribers:
+                temp_subscribers.append(transaction[3])
+                service_wise_subscribers[transaction[3]] = 1
+            else:
+                service_wise_subscribers[transaction[3]] += 1    
+        else:
+            if transaction[0] not in temp_subscribers:
+                temp_subscribers.append(transaction[3])
+                service_wise_subscribers[transaction[3]] = 1
+            else:
+                service_wise_subscribers[transaction[3]] += 1       
+
+    x1_data = list(service_wise_subscribers.keys())
+    y1_data = list(service_wise_subscribers.values())
+
+    fig = px.pie(values=y1_data, names=x1_data)
+    service_subscribers = fig.to_html(full_html=False)
+    
     messages.success(request, "Welcome to the analysis page!")
     return render(request, 'business_analysis.html', {'daywise': daywise,
                                                       'service_per_month': service_per_month,
-                                                      'number_times_service': number_times_service})
+                                                      'number_times_service': number_times_service,
+                                                      'service_earning' : service_earning,
+                                                      'month_earning' : month_earning,
+                                                      'service_subscribers' : service_subscribers})
 
 
 @login_required
