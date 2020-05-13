@@ -198,9 +198,9 @@ def export_transaction_individual(request):
     response = HttpResponse(content_type='text/csv')
 
     writer = csv.writer(response)
-    writer.writerow(['From', 'To', 'Amount', 'Service', 'Date', 'Time'])
+    writer.writerow(['From - Username', 'First Name', 'Last Name', 'To', 'Amount', 'Service', 'Date', 'Time'])
 
-    for transaction in Transaction.objects.select_related('by', 'to', 'service').filter(by=request.user).values_list('by__username', 'to__business_name', 'amount', 'service__name', 'date', 'time'):
+    for transaction in Transaction.objects.select_related('by', 'to', 'service').filter(by=request.user).values_list('by__username', 'by__first_name', 'by__last_name', 'to__business_name', 'amount', 'service__name', 'date', 'time'):
         writer.writerow(transaction)
 
     response['Content-Disposition'] = 'attachment;filename="transactions.csv"'
