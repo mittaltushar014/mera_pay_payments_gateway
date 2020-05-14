@@ -32,6 +32,7 @@ import plotly.express as px
 from plotly.offline import plot
 from plotly.graph_objs import Scatter
 
+
 User = get_user_model()
 
 otp = 0
@@ -214,7 +215,7 @@ def business_index(request):
 
     logged_in_user = User.objects.filter(
         username=request.user.username).first()
-    return render(request, 'index.html', {'credit_num': logged_in_user.credit_number, 'debit_num': logged_in_user.debit_number, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
+    return render(request, 'index.html', {'credit_num': logged_in_user.credit_number,'balance': logged_in_user.wallet, 'debit_num': logged_in_user.debit_number, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
 
 
 @login_required
@@ -226,7 +227,7 @@ def business_home(request):
     service_list = Service.objects.all()
     logged_in_user = User.objects.filter(
         username=request.user.username).first()
-    return render(request, 'business_home.html', {'services': services, 'service_list': service_list, 'balance': logged_in_user.wallet, 'credt_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
+    return render(request, 'business_home.html', {'services': services, 'service_list': service_list, 'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
 
 
 @login_required
@@ -245,9 +246,35 @@ def business_service_add(request):
         service_list = Service.objects.all()
         services = Service.objects.prefetch_related(
             'business_profile').filter(business_profile__user=request.user)
+        logged_in_user = User.objects.filter(
+        username=request.user.username).first()
         messages.success(request, "Your details are added successfully added!")
 
-        return render(request, 'business_home.html', {'services': services, 'service_list': service_list})
+        return render(request, 'business_home.html', {'services': services, 'service_list': service_list, 'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
+
+
+
+@login_required
+def price_change(request):
+    # For adding service to business profile
+
+    if request.method == "POST":
+        updated_price = request.POST.get("price")
+        service_name = request.POST.get("service")
+        print(service_name)
+        services = Service.objects.prefetch_related(
+            'business_profile').filter(business_profile__user=request.user,name="electronics").first()
+        services.price.price = updated_price
+        services.price.save()
+        services.save()
+        service_list = Service.objects.all()
+        services = Service.objects.prefetch_related(
+                        'business_profile').filter(business_profile__user=request.user)
+        logged_in_user = User.objects.filter(
+        username=request.user.username).first()
+
+        return render(request, 'business_home.html', {'services': services, 'service_list': service_list, 'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
+
 
 
 @login_required
@@ -263,7 +290,8 @@ def pay_link(request):
     link_dict = {'service_name': service_name, 'service_owner': service_owner,
                  'service_price': service_price, 'payment_type': payment_type}
     link = end_point + urlencode(link_dict)
-
+    logged_in_user = User.objects.filter(
+        username=request.user.username).first()
     return render(request, 'payment.html', {'link': link, 'service_name': service_name, 'service_owner': service_owner, 'service_price': service_price, 'payment_type': payment_type})
 
 
@@ -477,7 +505,9 @@ def business_analysis(request):
                                                       'number_times_service': number_times_service,
                                                       'service_earning' : service_earning,
                                                       'month_earning' : month_earning,
-                                                      'service_subscribers' : service_subscribers})
+                                                      'service_subscribers' : service_subscribers,
+                                                      'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance, 'credit_num': logged_in_user.credit_number, 'debit_num': logged_in_user.debit_number})
+
 
 
 @login_required
@@ -505,7 +535,7 @@ def business_profile(request):
 
     logged_in_user = User.objects.filter(
         username=request.user.username).first()
-    return render(request, 'business_profile.html', {'logged_in_user': logged_in_user})
+    return render(request, 'business_profile.html', {'logged_in_user': logged_in_user, 'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
 
 
 def error_400(request, exception):

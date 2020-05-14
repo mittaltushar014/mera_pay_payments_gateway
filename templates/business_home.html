@@ -3,32 +3,48 @@
 <!-- {% load static %} -->
 <h2>Business Home</h2>
 
-<div style="display : flex">
+<div style="margin-left:1.5rem;">
     Services subscribed:<br><hr>
     <br>
     <form action="/business/service_add/" method="post"> 
     {% csrf_token %}
+    <div style="display: flex;">
       <div class="form-group">
-        <label for="exampleFormControlSelect1">Add Service</label>
-        <select class="form-control" id="category" name="service" required>
+        <label for="exampleFormControlSelect1" >Add Service</label>
+        <select class="form-control" id="category" name="service" required size="1" style="max-width:100%;">
           {% for ser in service_list %}
             <option>{{ ser.name }}</option>
+
           {% endfor %}
         </select>
       </div>
-      <button type="submit" class="btn btn-success">Add</button>
+      <button type="submit" class="btn btn-success" style="margin-left: 3rem; margin-top: 2rem; height: 2rem;" required size="1">Add</button>
+    </div>
     </form>  
+  </div>
 
     {% for ser in services %}
-    <div class="card" style="width: 18rem; margin-left:20px;">
-      <img src="{{ser.image.url}}" class="card-img-top" alt="Image not found" height="200" width="200">
+    <div class="card" style="width: 18rem; margin-left:20px; margin-top: 10px;">
+      <img src="{{ser.image.url}}" class="card-img-top border border-success img-thumbnail" alt="Image not found" height="200" width="200" >
       <div class="card-body">
-        <h5 class="card-title">{{ser.name}}</h5>
-        <p class="card-text">{{ser.name}} is for electronics,home appliances</p>
+        <h5 class="card-title"> Price {{ ser.price.price}}</h5>
+        <p class="card-text">{{ser.name}} {{ser.description}}</p>
+
+        <form action="/business/price_change/" method="post"> 
+          {% csrf_token %}
+            <div class="form-group">
+              <h5 class="card-title" name = "service">{{ser.name}}</h5>
+              <input type="hidden" name="service" value="electronics" />
+              <input type="number" name="price">
+            </div>
+            <button type="submit" class="btn btn-success">change</button>
+          </form>  
+
+
       </div>
     </div>
     {% endfor %}
-  </div>
+ 
   
 
 {% endblock content %}

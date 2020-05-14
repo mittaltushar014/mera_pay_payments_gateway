@@ -121,6 +121,8 @@ def otp_verification_individual(request):
     return render(request, "individual_otp.html")
 
 
+
+
 def loginUser_individual(request):
     # For logging in individual
 
@@ -171,7 +173,9 @@ def index_individual(request):
                 username=request.user.username).first()
             data = data + \
                 [[service.name, str(profile.user), service.image,
-                  count, int(service.price)]]
+                  count, int(service.price.price)]]
+    logged_in_user = User.objects.filter(
+                username=request.user.username).first()
 
     service = Service.objects.all()
     payment_type = ['wallet', 'credit', 'debit']
@@ -318,7 +322,8 @@ def individual_analysis(request):
                                                         'service_spending' :service_spending,
                                                         'month_spending' : month_spending,
                                                         'number_times_service': number_times_service,
-                                                        'balance': logged_in_user.wallet})
+                                                        'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance, 'credit_num': logged_in_user.credit_number, 'debit_num': logged_in_user.debit_number})
+
 
 
 @login_required
