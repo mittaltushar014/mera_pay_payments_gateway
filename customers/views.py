@@ -232,7 +232,7 @@ def individual_analysis(request):
     x1_data = []
     y1_data = []
   
-    transactions_individual = Transaction.objects.select_related('by', 'to', 'service').filter(by=request.user).values_list('by__username', 'to__business_name', 'amount', 'service__name', 'date', 'time')
+    transactions_individual = Transaction.objects.select_related('by', 'to', 'service').filter(by=request.user).values_list('by__username', 'to__business_name', 'amount', 'service__name', 'date', 'time').order_by('date')
     
     service_wise_earning ={}
 
@@ -253,8 +253,8 @@ def individual_analysis(request):
     month_wise_earning ={}
 
     for transaction in transactions_individual:
-        if transaction[4].month not in month_wise_earning.keys():
-            month_name = datetime.date(2020, transaction[4].month, 1).strftime('%B')
+        month_name = datetime.date(2020, transaction[4].month, 1).strftime('%B')
+        if month_name not in month_wise_earning.keys(): 
             month_wise_earning[month_name] = transaction[2]
         else:
             month_wise_earning[month_name] += transaction[2]        
