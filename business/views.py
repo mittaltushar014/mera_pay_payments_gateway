@@ -498,7 +498,8 @@ def business_analysis(request):
 
     fig = px.pie(values=y1_data, names=x1_data)
     service_subscribers = fig.to_html(full_html=False)
-    
+
+    logged_in_user = User.objects.filter(username=request.user.username).first()
     messages.success(request, "Welcome to the analysis page!")
     return render(request, 'business_analysis.html', {'daywise': daywise,
                                                       'service_per_month': service_per_month,

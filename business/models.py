@@ -35,7 +35,7 @@ class Price(models.Model):
     price = models.DecimalField(default=Decimal(0.0), decimal_places=10, max_digits=64, null=True)
 
     def __str__(self):
-        return "{}".format(self.id)
+        return "{}".format(self.price)
     
     
 class Service(models.Model):
