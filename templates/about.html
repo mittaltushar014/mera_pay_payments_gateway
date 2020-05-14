@@ -1,0 +1,28 @@
+{% extends "index.html" %}
+{% block content %}
+{% load static %}
+<h1>About Us</h1>
+<div class="border-top pt-3">
+    <div class="alert alert-primary text-center" role="alert">
+        Welcome to Mera-Pay!
+    </div>
+    <div class="container text-center">
+        <p class="text-monospace">Millions of businesses choose Mera Pay to power their online payments both home and abroad. With easy setup, world-class
+        fraud and seller protection tools, we've got you covered.</p>
+        <hr class="sidebar-divider w-25">
+        <p class="font-weight-bold text-info">
+        <h4 class="text-center">Send or receive payments, export to csv and see the visuals!</h4>
+        <hr class="sidebar-divider w-25">
+        <h4 class="text-center">An all-in-one business account for online payments</h4>
+        <hr class="sidebar-divider w-25">
+        <h4 class="text-center">Online payments, your way</h4>
+        </p>
+        <hr class="sidebar-divider w-50">
+    </div>
+    <div class="text-center">
+        <small class="text-muted">
+            <a href="{% url 'business_home' %}">Back to Home Page</a>
+        </small>
+    </div>
+</div>
+{% endblock content %}

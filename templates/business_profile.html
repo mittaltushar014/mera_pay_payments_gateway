@@ -1,0 +1,43 @@
+{% extends "index.html" %}
+{% block content %}
+{% load static %}
+{% load rest_framework %}
+<h2>Business profile</h2>
+
+
+<ul class="list-group">
+    <li class="list-group-item">First Name : {{logged_in_user.first_name }}</li>
+    <li class="list-group-item">Last Name : {{ logged_in_user.last_name }}</li>
+    <li class="list-group-item">Email - {{ logged_in_user.email }}</li>
+    <li class="list-group-item">Date Joined : {{ logged_in_user.date_joined }}</li>
+    <li class="list-group-item">Phone : {{ logged_in_user.phone }}</li>
+    <li class="list-group-item">Wallet : {{ logged_in_user.wallet }}</li>
+    <li class="list-group-item">Profile Type : {{ logged_in_user.profile_type }}</li>
+    <li class="list-group-item">Credit card number : {{ logged_in_user.credit_number }}</li>
+    <li class="list-group-item">Debit card number : {{ logged_in_user.debit_number }}</li>
+    <li class="list-group-item">Credit card balance  : {{ logged_in_user.debit_balance }}</li>
+    <li class="list-group-item">Credit card balance  : {{ logged_in_user.credit_balance }}</li>
+    <!-- <li class="list-group-item">Business Name : {{ profile.business_name }}</li>
+    <li class="list-group-item">Resgistration Date : {{ profile.register_date }}</li>
+    <li class="list-group-item">Pan Number : {{ profile.pan_number }}</li>
+    <li class="list-group-item">PAN Holder Name : {{ profile.pan_name }}</li>
+    <li class="list-group-item">Address : {{ profile.address }}</li>
+    <li class="list-group-item">Pincode : {{ profile.pincode }}</li>
+    <li class="list-group-item">City : {{ profile.city }}</li>
+    <li class="list-group-item">State : {{ profile.state }}</li>
+
+    <li class="list-group-item"> Services :
+        {% for service in profile.service.values %}
+        {{ service.name }},
+        {% endfor %}
+    </li> -->
+</ul> 
+ 
+
+
+<div class="border-top pt-3">
+    <small class="text-muted">
+        <a href="{% url 'business_home' %}">Back to Home Page</a>
+    </small>
+</div>
+{% endblock content %}

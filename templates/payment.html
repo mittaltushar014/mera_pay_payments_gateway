@@ -1,0 +1,23 @@
+{% extends "individual_index.html" %}
+{% block content %}
+{% load static %}
+
+<h2>Transactions</h2>
+
+<div class="card text-center">
+    <div class="card-header">
+        PAY
+    </div>
+    <div class="card-body">
+        <h4 class="card-title">Payment Link:</h4>
+        <h4 class="card-title">{{link}}</h4>
+        <p class="card-text">Servive Name : {{service_name}}</p>
+        <p class="card-text">Service Owner : {{service_owner}}</p>
+        <p class="card-text">Service Price : {{service_price}}</p>
+        <p class="card-text">Payment Type : {{payment_type}}</p>
+        <a href="{% url 'individual_pay' service_name service_owner service_price payment_type %}" class="btn btn-primary">PAY</a>
+        <a href="{% url 'home_individual' %}" class="btn btn-primary">Cancel</a>
+    </div>
+</div>
+
+{% endblock content %}
