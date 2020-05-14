@@ -13,20 +13,34 @@
 
 
     <h2>
-      <small class="text-muted">Day wise payments</small>
+      <small class="text-muted">Spendings - Day wise</small>
     </h2>
 
     {{ daywise|safe }}
 
 
     <h2>
-      <small class="text-muted">Day wise number of payments</small>
+      <small class="text-muted">Spendings - Service wise</small>
+    </h2>
+
+    {{ service_spending|safe }}
+
+
+    <h2>
+      <small class="text-muted">Spendings - Month wise</small>
+    </h2>
+
+    {{ month_spending|safe }}
+
+
+    <h2>
+      <small class="text-muted">Number of payments - Day wise</small>
     </h2>
 
     {{ service_per_month|safe }}
 
     <h2>
-      <small class="text-muted">Number of times services used</small>
+      <small class="text-muted">Consumption - Service wise</small>
     </h2>
 
     {{ number_times_service|safe }}    

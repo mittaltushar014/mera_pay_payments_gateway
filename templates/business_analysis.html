@@ -12,22 +12,41 @@
     <br><br>
 
     <h2>
-      <small class="text-muted">Day wise payments</small>
+      <small class="text-muted">Earnings - Day wise</small>
     </h2>
 
     {{ daywise|safe }}
 
+    <h2>
+      <small class="text-muted">Earnings - Service wise</small>
+    </h2>
+
+    {{ service_earning|safe }}
 
     <h2>
-      <small class="text-muted">Day wise number of payments</small>
+      <small class="text-muted">Earnings - Month wise</small>
+    </h2>
+
+    {{ month_earning|safe }}    
+
+    <h2>
+      <small class="text-muted">Traffic - Day wise</small>
     </h2>
 
     {{ service_per_month|safe }}
 
     <h2>
-      <small class="text-muted">Number of times services used</small>
+      <small class="text-muted">Traffic - Service wise</small>
     </h2>
 
-    {{ number_times_service|safe }}    
+    {{ number_times_service|safe }}   
+
+  <h2>
+      <small class="text-muted">Subscribers - Service wise</small>
+    </h2>
+
+    {{ service_subscribers|safe }}   
+
+    
 
 {% endblock content %}

@@ -21,6 +21,8 @@ urlpatterns = [
     path('business/home/', views.business_home, name='business_home'),
     path('business/service_add/', views.business_service_add,
          name='business_service_add'),
+    path('business/price_change/', views.price_change,
+         name='price_change'),
     path('business/transaction/', views.business_transaction,
          name="business_transaction"),
     path('business/analysis/', views.business_analysis, name="business_analysis"),

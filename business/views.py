@@ -13,6 +13,7 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from random import randint
 from django.utils import timezone
+import datetime
 from decimal import Decimal
 
 from .serializers import ProfileSerializer, BusinessProfileSerializer
@@ -30,6 +31,7 @@ from django.views.generic import TemplateView
 import plotly.express as px
 from plotly.offline import plot
 from plotly.graph_objs import Scatter
+
 
 User = get_user_model()
 
@@ -213,7 +215,7 @@ def business_index(request):
 
     logged_in_user = User.objects.filter(
         username=request.user.username).first()
-    return render(request, 'index.html', {'credit_num': logged_in_user.credit_number, 'debit_num': logged_in_user.debit_number, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
+    return render(request, 'index.html', {'credit_num': logged_in_user.credit_number,'balance': logged_in_user.wallet, 'debit_num': logged_in_user.debit_number, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
 
 
 @login_required
@@ -225,7 +227,7 @@ def business_home(request):
     service_list = Service.objects.all()
     logged_in_user = User.objects.filter(
         username=request.user.username).first()
-    return render(request, 'business_home.html', {'services': services, 'service_list': service_list, 'balance': logged_in_user.wallet, 'credt_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
+    return render(request, 'business_home.html', {'services': services, 'service_list': service_list, 'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
 
 
 @login_required
@@ -244,9 +246,35 @@ def business_service_add(request):
         service_list = Service.objects.all()
         services = Service.objects.prefetch_related(
             'business_profile').filter(business_profile__user=request.user)
+        logged_in_user = User.objects.filter(
+        username=request.user.username).first()
         messages.success(request, "Your details are added successfully added!")
 
-        return render(request, 'business_home.html', {'services': services, 'service_list': service_list})
+        return render(request, 'business_home.html', {'services': services, 'service_list': service_list, 'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
+
+
+
+@login_required
+def price_change(request):
+    # For adding service to business profile
+
+    if request.method == "POST":
+        updated_price = request.POST.get("price")
+        service_name = request.POST.get("service")
+        print(service_name)
+        services = Service.objects.prefetch_related(
+            'business_profile').filter(business_profile__user=request.user,name="electronics").first()
+        services.price.price = updated_price
+        services.price.save()
+        services.save()
+        service_list = Service.objects.all()
+        services = Service.objects.prefetch_related(
+                        'business_profile').filter(business_profile__user=request.user)
+        logged_in_user = User.objects.filter(
+        username=request.user.username).first()
+
+        return render(request, 'business_home.html', {'services': services, 'service_list': service_list, 'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
+
 
 
 @login_required
@@ -289,7 +317,8 @@ def pay_link(request):
     link_dict = {'service_name': service_name, 'service_owner': service_owner,
                  'service_price': service_price, 'payment_type': payment_type}
     link = end_point + urlencode(link_dict)
-
+    logged_in_user = User.objects.filter(
+        username=request.user.username).first()
     return render(request, 'payment.html', {'link': link, 'service_name': service_name, 'service_owner': service_owner, 'service_price': service_price, 'payment_type': payment_type})
 
 
@@ -346,11 +375,11 @@ def individual_pay(request, service_name, service_owner, service_price, payment_
 def business_analysis(request):
     # For business analyis charts rendering
 
-    # daywise
+
+    # day_wise_earning
     x1_data = []
     y1_data = []
 
-    #transactions filtering
     transactions = Transaction.objects.filter(
         to=BusinessProfile.objects.filter(user=request.user).first()).order_by('date')
 
@@ -361,7 +390,46 @@ def business_analysis(request):
     fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Day", 'y': 'Amount'})
     daywise = fig.to_html(full_html=False)
 
-    # no_of_services_per_month
+
+    #service_wise_earning
+    x1_data = []
+    y1_data = []
+  
+    transactions_business = Transaction.objects.select_related('by', 'to', 'service').filter(to=BusinessProfile.objects.filter(user=request.user).first()).values_list('by__username', 'to__business_name', 'amount', 'service__name', 'date', 'time').order_by('date')
+    
+    service_wise_earning ={}
+
+    for transaction in transactions_business:
+        if transaction[3] not in service_wise_earning.keys():
+            service_wise_earning[transaction[3]] = transaction[2]
+        else:
+            service_wise_earning[transaction[3]] += transaction[2]
+
+    x1_data = list(service_wise_earning.keys())
+    y1_data = list(service_wise_earning.values())
+
+    fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Service", 'y': 'Amount'})
+    service_earning = fig.to_html(full_html=False)
+
+
+    #month_wise_earning
+    month_wise_earning ={}
+
+    for transaction in transactions_business:
+        month_name = datetime.date(2020, transaction[4].month, 1).strftime('%B')
+        if month_name not in month_wise_earning.keys():  
+            month_wise_earning[month_name] = transaction[2]
+        else:
+            month_wise_earning[month_name] += transaction[2]        
+
+    x1_data = list(month_wise_earning.keys())
+    y1_data = list(month_wise_earning.values())
+
+    fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Month", 'y': 'Amount'})
+    month_earning = fig.to_html(full_html=False)
+
+
+    #day_wise_traffic
     x1_data = []
     y1_data = []
 
@@ -378,10 +446,11 @@ def business_analysis(request):
     x1_data = list(no_of_services_per_month_dict.keys())
     y1_data = list(no_of_services_per_month_dict.values())
 
-    fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Day", 'y': 'Times'})
+    fig = px.line(x=x1_data, y=y1_data, labels={'x': "Day", 'y': 'Times'})
     service_per_month = fig.to_html(full_html=False)
 
-    # no_of_times_each_service_used
+
+    #service_wise_traffic
     x1_data = []
     y1_data = []
 
@@ -401,13 +470,42 @@ def business_analysis(request):
     x1_data = list(no_of_times_each_service_used_dict.keys())
     y1_data = list(no_of_times_each_service_used_dict.values())
 
-    fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Day", 'y': 'Amount'})
+    fig = px.pie(values=y1_data, names=x1_data)
     number_times_service = fig.to_html(full_html=False)
 
+
+    #service_wise_subscribers
+    service_wise_subscribers ={}
+    temp_subscribers=[]
+
+    for transaction in transactions_business:
+        if transaction[3] not in service_wise_subscribers.keys():
+            if transaction[0] not in temp_subscribers:
+                temp_subscribers.append(transaction[3])
+                service_wise_subscribers[transaction[3]] = 1
+            else:
+                service_wise_subscribers[transaction[3]] += 1    
+        else:
+            if transaction[0] not in temp_subscribers:
+                temp_subscribers.append(transaction[3])
+                service_wise_subscribers[transaction[3]] = 1
+            else:
+                service_wise_subscribers[transaction[3]] += 1       
+
+    x1_data = list(service_wise_subscribers.keys())
+    y1_data = list(service_wise_subscribers.values())
+
+    fig = px.pie(values=y1_data, names=x1_data)
+    service_subscribers = fig.to_html(full_html=False)
+    
     messages.success(request, "Welcome to the analysis page!")
     return render(request, 'business_analysis.html', {'daywise': daywise,
                                                       'service_per_month': service_per_month,
-                                                      'number_times_service': number_times_service})
+                                                      'number_times_service': number_times_service,
+                                                      'service_earning' : service_earning,
+                                                      'month_earning' : month_earning,
+                                                      'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance, 'credit_num': logged_in_user.credit_number, 'debit_num': logged_in_user.debit_number})
+
 
 
 @login_required
@@ -435,7 +533,7 @@ def business_profile(request):
 
     logged_in_user = User.objects.filter(
         username=request.user.username).first()
-    return render(request, 'business_profile.html', {'logged_in_user': logged_in_user})
+    return render(request, 'business_profile.html', {'logged_in_user': logged_in_user, 'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
 
 
 def error_400(request, exception):
