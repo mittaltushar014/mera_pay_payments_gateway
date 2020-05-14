@@ -31,18 +31,28 @@ class Profile(AbstractUser):
         return "{}".format(self.username)
 
 
+class Price(models.Model):
+    price = models.DecimalField(default=Decimal(0.0), decimal_places=10, max_digits=64, null=True)
+
+    def __str__(self):
+        return "{}".format(self.price)
+    
+    
 class Service(models.Model):
     #Model for registering the services
 
     name = models.CharField(max_length=50)
     image = models.ImageField(upload_to='image', blank = True)
     business_profile = models.ManyToManyField("BusinessProfile", blank=True, related_name="business_of_services")
-    price = models.DecimalField(default=Decimal(0.0), decimal_places=10, max_digits=64, null=True)
+    price = models.ForeignKey(Price, on_delete=models.CASCADE)
+    description = models.CharField(max_length=100,default="No Description Added")
+
+    
 
     def __str__(self):
         return "{}".format(self.name)
 
-
+    
 class BusinessProfile(models.Model):
     #Model for recording business profile
 
@@ -57,7 +67,7 @@ class BusinessProfile(models.Model):
     state = models.CharField(max_length=50)
 
     service  = models.ManyToManyField("Service", blank=True, related_name="services_of_business")
-    image  = models.ManyToManyField("Service", related_name="image_of_business")
+    
 
     def __str__(self):
         return "{}".format(self.business_name)

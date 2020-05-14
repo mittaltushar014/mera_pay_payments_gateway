@@ -6,10 +6,13 @@ import plotly.express as px
 from django.views.generic import TemplateView
 from django.http import JsonResponse
 import csv
+
 from decimal import Decimal
 import random
 from django.utils import timezone
+import datetime
 from random import randint
+
 from django.core.mail import send_mail
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth.models import User
@@ -20,8 +23,8 @@ from django.contrib.auth.decorators import login_required
 
 from .models import Service, BusinessProfile, Transaction, Profile
 from django.contrib.auth import get_user_model
-User = get_user_model()
 
+User = get_user_model()
 
 otp = 0
 
@@ -118,6 +121,8 @@ def otp_verification_individual(request):
     return render(request, "individual_otp.html")
 
 
+
+
 def loginUser_individual(request):
     # For logging in individual
 
@@ -168,16 +173,15 @@ def index_individual(request):
                 username=request.user.username).first()
             data = data + \
                 [[service.name, str(profile.user), service.image,
-                  count, int(service.price)]]
+                  count, int(service.price.price)]]
+    logged_in_user = User.objects.filter(
+                username=request.user.username).first()
 
     service = Service.objects.all()
     payment_type = ['wallet', 'credit', 'debit']
     try:
-
         return render(request, 'individual_index.html', {'service': data, 'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance, 'credit_num': logged_in_user.credit_number, 'debit_num': logged_in_user.debit_number, 'payment_type': payment_type})
-
     except:
-
         return render(request, '500.html')
 
 
@@ -198,9 +202,9 @@ def export_transaction_individual(request):
     response = HttpResponse(content_type='text/csv')
 
     writer = csv.writer(response)
-    writer.writerow(['From', 'To', 'Amount', 'Service', 'Date', 'Time'])
+    writer.writerow(['From - Username', 'First Name', 'Last Name', 'To', 'Amount', 'Service', 'Date', 'Time'])
 
-    for transaction in Transaction.objects.select_related('by', 'to', 'service').filter(by=request.user).values_list('by__username', 'to__business_name', 'amount', 'service__name', 'date', 'time'):
+    for transaction in Transaction.objects.select_related('by', 'to', 'service').filter(by=request.user).values_list('by__username', 'by__first_name', 'by__last_name', 'to__business_name', 'amount', 'service__name', 'date', 'time'):
         writer.writerow(transaction)
 
     response['Content-Disposition'] = 'attachment;filename="transactions.csv"'
@@ -213,7 +217,8 @@ def export_transaction_individual(request):
 def individual_analysis(request):
     # For transaction analysis of individual
 
-    # daywise
+
+    # day_wise_spendings
     x1_data = []
     y1_data = []
 
@@ -226,7 +231,47 @@ def individual_analysis(request):
     fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Day", 'y': 'Amount'})
     daywise = fig.to_html(full_html=False)
 
-    # no_of_services_per_month
+
+    #service_wise_spendings
+    x1_data = []
+    y1_data = []
+  
+    transactions_individual = Transaction.objects.select_related('by', 'to', 'service').filter(by=request.user).values_list('by__username', 'to__business_name', 'amount', 'service__name', 'date', 'time').order_by('date')
+    
+    service_wise_earning ={}
+
+    for transaction in transactions_individual:
+        if transaction[3] not in service_wise_earning.keys():
+            service_wise_earning[transaction[3]] = transaction[2]
+        else:
+            service_wise_earning[transaction[3]] += transaction[2]
+
+    x1_data = list(service_wise_earning.keys())
+    y1_data = list(service_wise_earning.values())
+
+    fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Service", 'y': 'Amount'})
+    service_spending = fig.to_html(full_html=False)
+
+
+    #month_wise_earning
+    month_wise_earning ={}
+
+    for transaction in transactions_individual:
+        month_name = datetime.date(2020, transaction[4].month, 1).strftime('%B')
+        if month_name not in month_wise_earning.keys(): 
+            month_wise_earning[month_name] = transaction[2]
+        else:
+            month_wise_earning[month_name] += transaction[2]        
+
+    x1_data = list(month_wise_earning.keys())
+    y1_data = list(month_wise_earning.values())
+
+    fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Month", 'y': 'Amount'})
+    month_spending = fig.to_html(full_html=False)
+
+
+
+    # payments_day_wise
     x1_data = []
     y1_data = []
 
@@ -243,10 +288,11 @@ def individual_analysis(request):
     x1_data = list(no_of_services_per_month_dict.keys())
     y1_data = list(no_of_services_per_month_dict.values())
 
-    fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Day", 'y': 'Times'})
+    fig = px.line(x=x1_data, y=y1_data, labels={'x': "Day", 'y': 'Times'})
     service_per_month = fig.to_html(full_html=False)
 
-    # no_of_times_each_service_used
+
+    # consumption_service_wise
     x1_data = []
     y1_data = []
 
@@ -266,19 +312,24 @@ def individual_analysis(request):
     x1_data = list(no_of_times_each_service_used_dict.keys())
     y1_data = list(no_of_times_each_service_used_dict.values())
 
-    fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Day", 'y': 'Amount'})
+    fig = px.pie(values=y1_data, names=x1_data)
     number_times_service = fig.to_html(full_html=False)
 
     messages.success(request, "Welcome to the analysis page!")
-    logged_in_user = User.objects.filter(
-        username=request.user.username).first()
+    logged_in_user = User.objects.filter(username=request.user.username).first()
     return render(request, 'individual_analysis.html', {'daywise': daywise,
                                                         'service_per_month': service_per_month,
-                                                        'number_times_service': number_times_service, 'balance': logged_in_user.wallet})
+                                                        'service_spending' :service_spending,
+                                                        'month_spending' : month_spending,
+                                                        'number_times_service': number_times_service,
+                                                        'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance, 'credit_num': logged_in_user.credit_number, 'debit_num': logged_in_user.debit_number})
+
 
 
 @login_required
 def customer_profile(request):
+    #For rendering customer profile
+
     logged_in_user = User.objects.filter(
         username=request.user.username).first()
     return render(request, 'individual_profile.html', {'logged_in_user': logged_in_user})

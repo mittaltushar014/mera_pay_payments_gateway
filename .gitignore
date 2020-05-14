@@ -139,5 +139,3 @@ dmypy.json
 bin/
 pyvenv.cfg
 lib64
-db.sqlite3
-.db.sqlite3
