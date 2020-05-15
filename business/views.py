@@ -78,9 +78,9 @@ def registration(request):
             Error = Error + 1
             message_error = message_error + ['First name already exists']
 
-        # if User.objects.filter(email=email).exists():
-        #     Error = Error + 1
-        #     message_error = message_error + ['Email registered with different account']
+        if User.objects.filter(email=email).exists():
+             Error = Error + 1
+             message_error = message_error + ['Email registered with different account']
 
         if User.objects.filter(phone=phone).exists():
             Error = Error + 1
