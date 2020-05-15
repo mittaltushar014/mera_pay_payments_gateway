@@ -17,7 +17,10 @@
     <li class="list-group-item">Debit card number : {{ logged_in_user.debit_number }}</li>
     <li class="list-group-item">Credit card balance  : {{ logged_in_user.debit_balance }}</li>
     <li class="list-group-item">Credit card balance  : {{ logged_in_user.credit_balance }}</li>
-    <!-- <li class="list-group-item">Business Name : {{ profile.business_name }}</li>
+    
+    <hr>
+
+    <li class="list-group-item">Business Name : {{ profile.business_name }}</li>
     <li class="list-group-item">Resgistration Date : {{ profile.register_date }}</li>
     <li class="list-group-item">Pan Number : {{ profile.pan_number }}</li>
     <li class="list-group-item">PAN Holder Name : {{ profile.pan_name }}</li>
@@ -30,7 +33,7 @@
         {% for service in profile.service.values %}
         {{ service.name }},
         {% endfor %}
-    </li> -->
+    </li>
 </ul> 
  
 

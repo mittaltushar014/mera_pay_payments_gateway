@@ -82,12 +82,6 @@
       <!-- Divider -->
       <hr class="sidebar-divider my-0">
 
-      <!-- Nav Item - Dashboard -->
-      <li class="nav-item active">
-        <a class="nav-link" href="{% url 'home_individual' %}">
-          <i class="fas fa-fw fa-tachometer-alt"></i>
-          <span>Dashboard</span></a>
-      </li>
 
       <!-- Divider -->
       <hr class="sidebar-divider">
@@ -112,12 +106,29 @@
           <i class="fas fa-fw fa-chart-area"></i>
           <span>Payments History</span></a>
       </li>
+
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'export_transaction_individual' %}">
+          <i class="fas fa-fw fa-chart-area"></i>
+          <span>Payments Export</span></a>
+      </li>
+
+
       <li class="nav-item">
         <a class="nav-link" href="{% url 'individual_analysis' %}">
           <i class="fas fa-fw fa-chart-area"></i>
           <span>Payments Analysis</span></a>
       </li>
       <!-- Divider -->
+
+      <hr class="sidebar-divider">
+
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'customer_profile' %}">
+          <i class="far fa-address-card"></i>
+          <span>Profile</span></a>
+      </li>
+
       <hr class="sidebar-divider">
 
       <li class="nav-item">
@@ -145,7 +156,7 @@
         <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
           <div class="bg-white py-2 collapse-inner rounded">
             <h6 class="collapse-header">Login Screens:</h6>
-            <a class="collapse-item" href="{% url 'export_transaction_individual' %}">Export to csv</a>
+            <a class="collapse-item" href="{% url 'customer_profile' %}">Profile</a>
             <a class="collapse-item" href="{% url 'logout_individual' %}">Logout</a>
         </div>
       </li>
@@ -255,9 +266,9 @@
             <img src="{{ser.2.url}}" class="card-img-top" alt="Image not found" height="100" width="100">
             <div class="card-body">
               <h5 class="card-title">{{ser.3}}</h5>
-              <h5 class="card-title">Service name {{ser.0}}</h5>
-              <p class="card-text">Serice Owner {{ser.1}}</p>
-              <p class="card-text">Serice Price {{ser.4}}</p>
+              <h5 class="card-title">{{ser.0}}</h5>
+              <p class="card-text">Provider: {{ser.1}}</p>
+              <p class="card-text">Price: {{ser.4}}</p>
             </div>
 
             <div class="card-body dropdown">

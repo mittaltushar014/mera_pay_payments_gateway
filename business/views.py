@@ -45,6 +45,10 @@ def home(request):
 
     return render(request, 'home.html')
 
+def main(request):
+    #For rendering main page
+
+    return render(request, 'main.html')
 
 def registration(request):
     # For all users registration
@@ -174,7 +178,8 @@ def business_signup(request):
         services = Service.objects.prefetch_related(
             'business_profile').filter(business_profile__user=request.user)
         messages.success(request, "You details are added successfully added!")
-        return render(request, 'business_home.html', {'services': services, 'service_list': service_list})
+        logged_in_user = request.user
+        return render(request, 'business_home.html', {'services': services, 'service_list': service_list, 'logged_in_user': logged_in_user, 'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
 
     service = Service.objects.all()
     return render(request, 'business_signup.html', {'service': service})
@@ -195,10 +200,11 @@ def loginUser(request):
             services = Service.objects.prefetch_related(
                 'business_profile').filter(business_profile__user=request.user)
             service_list = Service.objects.all()
-            return render(request, 'business_home.html', {'services': services, 'service_list': service_list})
+            logged_in_user = request.user
+            return render(request, 'business_home.html', {'services': services, 'service_list': service_list, 'logged_in_user': logged_in_user, 'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
         else:
             messages.error(request, "Invalid credentials! Please try again!")
-            return redirect('home')
+            return redirect('main_home')
 
     return render(request, 'login.html')
 
@@ -208,7 +214,8 @@ def logoutUser(request):
     # For logging out of user
 
     django_logout(request)
-    return render(request, 'main.html')
+    messages.success(request,"Logout successful!")
+    return render(request, 'home.html')
 
 
 @login_required
@@ -262,9 +269,8 @@ def price_change(request):
     if request.method == "POST":
         updated_price = request.POST.get("price")
         service_name = request.POST.get("service")
-        print(service_name)
         services = Service.objects.prefetch_related(
-            'business_profile').filter(business_profile__user=request.user, name="electronics").first()
+            'business_profile').filter(business_profile__user=request.user, name=service_name).first()
         services.price.price = updated_price
         services.price.save()
         services.save()
@@ -287,6 +293,7 @@ def pay_link(request):
     payment_type = request.GET.get('payment_type')
     end_point = 'http://127.0.0.1:8000/pay_link/?'
 
+
     if request.GET.get('ref_id'):
         ref_id = request.GET.get('ref_id')
         link_dict = {'service_name': service_name, 'service_owner': service_owner,
@@ -298,7 +305,7 @@ def pay_link(request):
     else:
         link_dict = {'service_name': service_name, 'service_owner': service_owner,
                      'service_price': service_price, 'payment_type': payment_type, }
-        link = end_point + urlencode(link_dict)
+        link = end_point + urlencode(link_dict)     
         return render(request, 'payment.html', {'link': link, 'service_name': service_name, 'service_owner': service_owner, 'service_price': service_price, 'payment_type': payment_type, })
 
 
@@ -371,8 +378,7 @@ def business_transaction(request):
     transactions = Transaction.objects.filter(to=BusinessProfile.objects.filter(
         user=request.user).first()).order_by('-date', '-time')
     messages.success(request, "Welcome to the transactions page!")
-    return render(request, 'business_transaction.html', locals())
-
+    return render(request, 'business_transaction.html', locals() )
 
 @login_required
 def export_transaction(request):
@@ -397,6 +403,7 @@ def export_transaction(request):
 def business_analysis(request):
     # For business analyis charts rendering
 
+    
     # day_wise_earning
     x1_data = []
     y1_data = []
@@ -410,6 +417,8 @@ def business_analysis(request):
 
     fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Day", 'y': 'Amount'})
     daywise = fig.to_html(full_html=False)
+    
+    
     # service_wise_earning
     x1_data = []
     y1_data = []
@@ -430,6 +439,8 @@ def business_analysis(request):
 
     fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Service", 'y': 'Amount'})
     service_earning = fig.to_html(full_html=False)
+    
+    
     # month_wise_earning
     month_wise_earning = {}
 
@@ -446,6 +457,8 @@ def business_analysis(request):
 
     fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Month", 'y': 'Amount'})
     month_earning = fig.to_html(full_html=False)
+    
+    
     # day_wise_traffic
     x1_data = []
     y1_data = []
@@ -465,6 +478,8 @@ def business_analysis(request):
 
     fig = px.line(x=x1_data, y=y1_data, labels={'x': "Day", 'y': 'Times'})
     service_per_month = fig.to_html(full_html=False)
+    
+    
     # service_wise_traffic
     x1_data = []
     y1_data = []
@@ -487,6 +502,8 @@ def business_analysis(request):
 
     fig = px.pie(values=y1_data, names=x1_data)
     number_times_service = fig.to_html(full_html=False)
+    
+    
     # service_wise_subscribers
     service_wise_subscribers = {}
     temp_subscribers = []
@@ -511,8 +528,7 @@ def business_analysis(request):
     fig = px.pie(values=y1_data, names=x1_data)
     service_subscribers = fig.to_html(full_html=False)
 
-    logged_in_user = User.objects.filter(
-        username=request.user.username).first()
+    logged_in_user = request.user
     messages.success(request, "Welcome to the analysis page!")
     return render(request, 'business_analysis.html', {'daywise': daywise,
                                                       'service_per_month': service_per_month,
@@ -527,7 +543,8 @@ def business_analysis(request):
 def about(request):
     # About business
 
-    return render(request, 'about.html')
+    logged_in_user = request.user
+    return render(request, 'about.html', {'logged_in_user': logged_in_user, 'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
 
 
 class BusinessProfileDetail(APIView):
@@ -546,9 +563,9 @@ class BusinessProfileDetail(APIView):
 def business_profile(request):
     # For rendering business profile
 
-    logged_in_user = User.objects.filter(
-        username=request.user.username).first()
-    return render(request, 'business_profile.html', {'logged_in_user': logged_in_user, 'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
+    logged_in_user = request.user
+    profile = BusinessProfile.objects.filter(user=request.user).first()   
+    return render(request, 'business_profile.html', {'logged_in_user': logged_in_user, 'profile': profile, 'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
 
 
 def error_400(request, exception):

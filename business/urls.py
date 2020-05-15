@@ -14,6 +14,7 @@ urlpatterns = [
     path('export/transaction/', views.export_transaction, name='exporttransaction'),
 
     path('', views.home, name="home"),
+    path('main/home/', views.main, name='main_home'),
     path('business_index/', views.business_index, name="index"),
     path('about/', views.about, name='about'),
 
