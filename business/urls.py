@@ -30,7 +30,8 @@ urlpatterns = [
     path('pay_link/', views.pay_link, name='pay_link'),
     path('individual_pay/<str:service_name>/<str:service_owner>/<int:service_price>/<str:payment_type>/',
          views.individual_pay, name='individual_pay'),
-
+    path('individual_pay/<str:service_name>/<str:service_owner>/<int:service_price>/<str:payment_type>/<int:ref_id>/',
+         views.individual_pay, name='individual_pay'),
     path('business/404/', views.e_404, name='404'),
     path('business/403/', views.e_403, name='403'),
     path('business/400/', views.e_400, name='400'),
