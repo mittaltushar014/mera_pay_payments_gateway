@@ -263,7 +263,7 @@ def price_change(request):
         service_name = request.POST.get("service")
         print(service_name)
         services = Service.objects.prefetch_related(
-            'business_profile').filter(business_profile__user=request.user,name="electronics").first()
+            'business_profile').filter(business_profile__user=request.user,name=service_name).first()
         services.price.price = updated_price
         services.price.save()
         services.save()
