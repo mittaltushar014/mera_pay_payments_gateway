@@ -34,7 +34,7 @@
           {% csrf_token %}
             <div class="form-group">
               <h5 class="card-title" name = "service">{{ser.name}}</h5>
-              <input type="hidden" name="service" value="electronics" />
+              <input type="hidden" name="service" value="{{ser.name}}" />
               <input type="number" name="price">
             </div>
             <button type="submit" class="btn btn-success">change</button>
