@@ -565,6 +565,12 @@ class BusinessProfileDetail(APIView):
 @login_required
 def business_profile(request):
     # For rendering business profile
+    if request.method == "POST":
+        updated_endpoint = request.POST.get("endpoint")
+        profile = BusinessProfile.objects.filter(user=request.user).first()
+        profile.business_url_endpoint = updated_endpoint
+        profile.save()
+        messages.success(request, "End Point Updated Successfully!")
 
     logged_in_user = request.user
     profile = BusinessProfile.objects.filter(user=request.user).first()
