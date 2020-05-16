@@ -356,7 +356,7 @@ def individual_pay(request, service_name, service_owner, service_price, payment_
     service_owner_list = []
     for owner in Profile.objects.filter(profile_type="business").values_list("username"):
         service_owner_list.append(owner[0])
-    
+
     business_endpoint = BusinessProfile.objects.filter(user=Profile.objects.filter(username=service_owner).values(
         "id")[0]["id"]).values("business_url_endpoint")[0]["business_url_endpoint"]
 
@@ -368,7 +368,8 @@ def individual_pay(request, service_name, service_owner, service_price, payment_
             'trn_time': transaction.time.strftime("%H:%M:%S"),
             'amount': transaction.amount,
         }
-        response = requests.post(url=business_endpoint, data=json.dumps(transaction_json), headers={'Content-type': 'application/json'})
+        response = requests.post(url=business_endpoint, data=json.dumps(
+            transaction_json), headers={'Content-type': 'application/json'})
         print(response.content)
         print(transaction_json)
 

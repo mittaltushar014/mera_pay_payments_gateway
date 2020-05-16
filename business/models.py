@@ -34,8 +34,9 @@ class Profile(AbstractUser):
 
 
 class Price(models.Model):
-    price = models.DecimalField(default=Decimal(
-        0.0), decimal_places=10, max_digits=64, null=True)
+    price = models.IntegerField(default=0, null=True)
+    # price = models.DecimalField(default=Decimal(
+    #     0.0), decimal_places=10, max_digits=64, null=True)
 
     def __str__(self):
         return "{}".format(self.price)
