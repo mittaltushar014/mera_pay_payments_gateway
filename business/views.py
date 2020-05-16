@@ -45,10 +45,12 @@ def home(request):
 
     return render(request, 'home.html')
 
+
 def main(request):
-    #For rendering main page
+    # For rendering main page
 
     return render(request, 'main.html')
+
 
 def registration(request):
     # For all users registration
@@ -79,8 +81,9 @@ def registration(request):
             message_error = message_error + ['First name already exists']
 
         if User.objects.filter(email=email).exists():
-             Error = Error + 1
-             message_error = message_error + ['Email registered with different account']
+            Error = Error + 1
+            message_error = message_error + \
+                ['Email registered with different account']
 
         if User.objects.filter(phone=phone).exists():
             Error = Error + 1
@@ -214,7 +217,7 @@ def logoutUser(request):
     # For logging out of user
 
     django_logout(request)
-    messages.success(request,"Logout successful!")
+    messages.success(request, "Logout successful!")
     return render(request, 'home.html')
 
 
@@ -293,7 +296,6 @@ def pay_link(request):
     payment_type = request.GET.get('payment_type')
     end_point = 'http://127.0.0.1:8000/pay_link/?'
 
-
     if request.GET.get('ref_id'):
         ref_id = request.GET.get('ref_id')
         link_dict = {'service_name': service_name, 'service_owner': service_owner,
@@ -305,7 +307,7 @@ def pay_link(request):
     else:
         link_dict = {'service_name': service_name, 'service_owner': service_owner,
                      'service_price': service_price, 'payment_type': payment_type, }
-        link = end_point + urlencode(link_dict)     
+        link = end_point + urlencode(link_dict)
         return render(request, 'payment.html', {'link': link, 'service_name': service_name, 'service_owner': service_owner, 'service_price': service_price, 'payment_type': payment_type, })
 
 
@@ -351,7 +353,14 @@ def individual_pay(request, service_name, service_owner, service_price, payment_
                                              amount=service_price, service=Service.objects.filter(name=service_name).first())
     transaction.save()
 
-    if service_owner == 'business02':
+    service_owner_list = []
+    for owner in Profile.objects.filter(profile_type="business").values_list("username"):
+        service_owner_list.append(owner[0])
+    
+    business_endpoint = BusinessProfile.objects.filter(user=Profile.objects.filter(username=service_owner).values(
+        "id")[0]["id"]).values("business_url_endpoint")[0]["business_url_endpoint"]
+
+    if service_owner in service_owner_list:
         transaction_json = {
             'ref_id': ref_id,
             'transaction_id': transaction.id,
@@ -359,8 +368,7 @@ def individual_pay(request, service_name, service_owner, service_price, payment_
             'trn_time': transaction.time.strftime("%H:%M:%S"),
             'amount': transaction.amount,
         }
-        response = requests.post(url='http://13.235.243.230:8000/user_api/transactions/',
-                                 data=json.dumps(transaction_json), headers={'Content-type': 'application/json'})
+        response = requests.post(url=business_endpoint, data=json.dumps(transaction_json), headers={'Content-type': 'application/json'})
         print(response.content)
         print(transaction_json)
 
@@ -378,7 +386,8 @@ def business_transaction(request):
     transactions = Transaction.objects.filter(to=BusinessProfile.objects.filter(
         user=request.user).first()).order_by('-date', '-time')
     messages.success(request, "Welcome to the transactions page!")
-    return render(request, 'business_transaction.html', locals() )
+    return render(request, 'business_transaction.html', locals())
+
 
 @login_required
 def export_transaction(request):
@@ -403,7 +412,6 @@ def export_transaction(request):
 def business_analysis(request):
     # For business analyis charts rendering
 
-    
     # day_wise_earning
     x1_data = []
     y1_data = []
@@ -417,8 +425,7 @@ def business_analysis(request):
 
     fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Day", 'y': 'Amount'})
     daywise = fig.to_html(full_html=False)
-    
-    
+
     # service_wise_earning
     x1_data = []
     y1_data = []
@@ -439,8 +446,7 @@ def business_analysis(request):
 
     fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Service", 'y': 'Amount'})
     service_earning = fig.to_html(full_html=False)
-    
-    
+
     # month_wise_earning
     month_wise_earning = {}
 
@@ -457,8 +463,7 @@ def business_analysis(request):
 
     fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Month", 'y': 'Amount'})
     month_earning = fig.to_html(full_html=False)
-    
-    
+
     # day_wise_traffic
     x1_data = []
     y1_data = []
@@ -478,8 +483,7 @@ def business_analysis(request):
 
     fig = px.line(x=x1_data, y=y1_data, labels={'x': "Day", 'y': 'Times'})
     service_per_month = fig.to_html(full_html=False)
-    
-    
+
     # service_wise_traffic
     x1_data = []
     y1_data = []
@@ -502,8 +506,7 @@ def business_analysis(request):
 
     fig = px.pie(values=y1_data, names=x1_data)
     number_times_service = fig.to_html(full_html=False)
-    
-    
+
     # service_wise_subscribers
     service_wise_subscribers = {}
     temp_subscribers = []
@@ -564,7 +567,7 @@ def business_profile(request):
     # For rendering business profile
 
     logged_in_user = request.user
-    profile = BusinessProfile.objects.filter(user=request.user).first()   
+    profile = BusinessProfile.objects.filter(user=request.user).first()
     return render(request, 'business_profile.html', {'logged_in_user': logged_in_user, 'profile': profile, 'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
 
 

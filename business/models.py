@@ -69,6 +69,7 @@ class BusinessProfile(models.Model):
     pincode = models.IntegerField()
     city = models.CharField(max_length=50)
     state = models.CharField(max_length=50)
+    business_url_endpoint = models.CharField(max_length=200, null=True)
 
     service = models.ManyToManyField(
         "Service", blank=True, related_name="services_of_business")

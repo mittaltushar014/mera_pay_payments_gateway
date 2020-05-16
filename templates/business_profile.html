@@ -21,6 +21,9 @@
     <hr>
 
     <li class="list-group-item">Business Name : {{ profile.business_name }}</li>
+    {% if profile.business_url_endpoint %}
+    <li class="list-group-item">Business Name : {{ profile.business_url_endpoint }}</li>
+    {% endif %}
     <li class="list-group-item">Resgistration Date : {{ profile.register_date }}</li>
     <li class="list-group-item">Pan Number : {{ profile.pan_number }}</li>
     <li class="list-group-item">PAN Holder Name : {{ profile.pan_name }}</li>
