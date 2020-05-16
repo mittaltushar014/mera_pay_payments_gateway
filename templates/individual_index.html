@@ -261,27 +261,29 @@
         <!-- End of Topbar -->
 
         <div style="display : flex">
+          <div class="row">
           {% for ser in service %}
-          <div class="card" style="width: 13rem;margin-left: 2rem;">
-            <img src="{{ser.2.url}}" class="card-img-top" alt="Image not found" height="100" width="100">
-            <div class="card-body">
-              <h5 class="card-title">{{ser.3}}</h5>
-              <h5 class="card-title">{{ser.0}}</h5>
-              <p class="card-text">Provider: {{ser.1}}</p>
-              <p class="card-text">Price: {{ser.4}}</p>
-            </div>
-
-            <div class="card-body dropdown">
-              <button class="dropbtn">Pay</button>
-              <div class="dropdown-content" >
-                <button onclick="loadwallet('{{ser.0}}', '{{ser.1}}', '{{ser.4}}', '{{payment_type.0}}')">Wallet</button>
-                <button onclick="loadcredit('{{ser.0}}', '{{ser.1}}', '{{ser.4}}', '{{payment_type.1}}')">Credit Card</button>
-                <button onclick="loaddebit('{{ser.0}}', '{{ser.1}}', '{{ser.4}}', '{{payment_type.2}}')">Debit Card</button>
+            <div class="card my-3" style="width:13rem; margin-left:2rem;">
+              <img src="{{ser.2.url}}" class="card-img-top" alt="Image not found" height="100px" width="100px">
+              <div class="card-body">
+                <h5 class="card-title text-center">{{ser.0}}</h5>
+                <p class="card-text text-center">Provider: {{ser.1}}</p>
+                <p class="card-text text-center">Price: {{ser.4}}</p>
               </div>
-            </div>
+
+              <div class="card-body dropdown text-center">
+                <button class="dropbtn text-center">Pay</button>
+                <div class="dropdown-content" >
+                  <button onclick="loadwallet('{{ser.0}}', '{{ser.1}}', '{{ser.4}}', '{{payment_type.0}}')">Wallet</button>
+                  <button onclick="loadcredit('{{ser.0}}', '{{ser.1}}', '{{ser.4}}', '{{payment_type.1}}')">Credit Card</button>
+                  <button onclick="loaddebit('{{ser.0}}', '{{ser.1}}', '{{ser.4}}', '{{payment_type.2}}')">Debit Card</button>
+                </div>
+              </div>
             </div> 
-            {% endfor %}
-            </div>
+          {% endfor %}
+          </div>
+        </div>
+
 
         <div class="mx-4">
           {% block content %}{% endblock %}
