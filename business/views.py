@@ -271,6 +271,13 @@ def price_change(request):
 
     if request.method == "POST":
         updated_price = request.POST.get("price")
+        if float(updated_price) < 10:
+            messages.success(request, "Minimum cost for service must be 10!")
+            service_list = Service.objects.all()
+            services = Service.objects.prefetch_related('business_profile').filter(business_profile__user=request.user)
+            logged_in_user = User.objects.filter(
+            username=request.user.username).first()
+            return render(request, 'business_home.html', {'services': services, 'service_list': service_list, 'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
         service_name = request.POST.get("service")
         services = Service.objects.prefetch_related(
             'business_profile').filter(business_profile__user=request.user, name=service_name).first()
