@@ -23,6 +23,14 @@
 
 <body class="bg-gradient-primary">
 
+   {% if messages %}
+        {% for msg in messages %}
+            <div class="alert alert-info alert-dismissable">
+                {{msg.message}}
+            </div>
+        {% endfor %}
+   {% endif %}
+
   <div class="container">
     <header class="masthead">
       <div class="container h-100">
@@ -46,7 +54,7 @@
               <div class="text-center">
                 <h1 class="h4 text-gray-900 mb-4">Your profile choice!</h1>
               </div>
-              <form class="user" method="get" name ="form1" onSubmit="actionOnSubmit()" target="_blank">
+              <form class="user" method="get" name ="form1" onSubmit="actionOnSubmit()">
                 {% csrf_token %}
                 <div class="form-group row">
                 <div class="form-group">
@@ -72,7 +80,7 @@
               <hr>
             </div>
             <div class="col-lg-8 align-self-baseline">
-              <p class="text-white-75 font-weight-light mb-5">Do payments, export them to csv and see the visuals! <br> Have a happy journey on our webiste!</p>
+              <p class="text-white-75 font-weight-light mb-5">Do or accept payments, export them to csv and see the visuals! <br> Have a happy journey on our webiste!</p>
               <a class="btn btn-primary btn-xl js-scroll-trigger" href="#about">Find Out More</a>
           </div>
   
@@ -86,7 +94,7 @@
               <div class="col-lg-8 text-center">
                   <h2 class="text-white mt-0">We've got what you need!</h2>
                   <hr class="divider light my-4" />
-                  <p class="text-white-50 mb-4">We have got you covered for your expenses management! <br> Add your payments, export them to csv and see the visuals! <br> Need more? <br> Write to us : merapay@gmail.com </p>
+                  <p class="text-white-50 mb-4">We have got you covered for your payments management! <br> Add your payments, export them to csv and see the visuals! <br> Need more? <br> Write to us : merapay@gmail.com </p>
                   <a class="btn btn-light btn-xl js-scroll-trigger" href="/registration/">Get Started!</a>
               </div>
           </div>

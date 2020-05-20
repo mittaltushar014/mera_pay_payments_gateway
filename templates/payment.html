@@ -15,7 +15,12 @@
         <p class="card-text">Service Owner : {{service_owner}}</p>
         <p class="card-text">Service Price : {{service_price}}</p>
         <p class="card-text">Payment Type : {{payment_type}}</p>
-        <a href="{% url 'individual_pay' service_name service_owner service_price payment_type %}" class="btn btn-primary">PAY</a>
+        {% if ref_id %}
+        <p class="card-text">Reference ID : {{ref_id}}</p>
+        <a href="{% url 'individual_pay' service_name service_owner service_price payment_type ref_id%}" class="btn btn-primary">PAY</a>
+        {% else %}
+        <a href="{% url 'individual_pay' service_name service_owner service_price payment_type%}" class="btn btn-primary">PAY</a>
+        {% endif %}
         <a href="{% url 'home_individual' %}" class="btn btn-primary">Cancel</a>
     </div>
 </div>

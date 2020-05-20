@@ -38,6 +38,7 @@ def signupUser_individual(request):
         first_name = request.POST['firstname']
         last_name = request.POST['lastname']
         email = request.POST['email']
+        phone = request.POST['phone']
 
         Error = 0
         message_error = []
@@ -66,13 +67,13 @@ def signupUser_individual(request):
             Error = Error + 1
             message_error = message_error + ['First name already exists']
 
-        # if User.objects.filter(email=email).exists():
-        #     Error = Error + 1
-        #     message_error = message_error + ['Email registered with different account']
+        if User.objects.filter(email=email).exists():
+            Error = Error + 1
+            message_error = message_error + ['Email registered with different account']
 
-        # if User.objects.filter(phone=phone).exists():
-        #     Error = Error + 1
-        #     message_error = message_error + ['Phone registered with different account'
+        if User.objects.filter(phone=phone).exists():
+            Error = Error + 1
+            message_error = message_error + ['Phone registered with different account']
 
         check = True
         while check:
@@ -113,14 +114,13 @@ def otp_verification_individual(request):
     if request.method == "POST":
         userotp = request.POST['otp']
         if str(otp) == userotp:
-            return render(request, "individual_index.html")
+            logged_in_user = request.user
+            return render(request, "individual_index.html", {'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
         else:
             messages.error(request, "Invalid Otp! Please try again")
             return render(request, "individual_signup.html")
 
     return render(request, "individual_otp.html")
-
-
 
 
 def loginUser_individual(request):
@@ -129,15 +129,24 @@ def loginUser_individual(request):
     if request.method == "POST":
         username = request.POST['username']
         password = request.POST['password']
+        valuenext= request.POST.get('next')
+
         user = authenticate(username=username, password=password)
 
-        if user is not None:
+        if user is not None and valuenext=='':
             login(request, user)
             messages.success(request, "Login Successful! You are welcome!")
-            return render(request, 'individual_index.html')
+            logged_in_user = request.user
+            return render(request, 'individual_home.html', {'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
+
+        elif user is not None and valuenext!='':
+            login(request, user)
+            messages.success(request, "Login Successful! You can pay here!")
+            return redirect(valuenext)
+
         else:
-            messages.error(request, "Invalid credentials! Please try again!")
-            return redirect('loginUser_individual')
+            messages.success(request, "Invalid credentials! Please try again!")
+            return render(request, 'main.html')
 
     return render(request, 'individual_login.html')
 
@@ -146,7 +155,8 @@ def loginUser_individual(request):
 def home_individual(request):
     # For home of individual
 
-    return render(request, 'individual_home.html')
+    logged_in_user = request.user
+    return render(request, 'individual_home.html', {'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
 
 
 @login_required
@@ -154,7 +164,8 @@ def logout_individual(request):
     # For logging out individual
 
     django_logout(request)
-    return render(request, 'main.html')
+    messages.success(request, "Logout successful!")
+    return render(request, 'home.html')
 
 
 @login_required
@@ -174,8 +185,8 @@ def index_individual(request):
             data = data + \
                 [[service.name, str(profile.user), service.image,
                   count, int(service.price.price)]]
-    logged_in_user = User.objects.filter(
-                username=request.user.username).first()
+    
+    logged_in_user = request.user
 
     service = Service.objects.all()
     payment_type = ['wallet', 'credit', 'debit']
@@ -202,7 +213,8 @@ def export_transaction_individual(request):
     response = HttpResponse(content_type='text/csv')
 
     writer = csv.writer(response)
-    writer.writerow(['From - Username', 'First Name', 'Last Name', 'To', 'Amount', 'Service', 'Date', 'Time'])
+    writer.writerow(['From - Username', 'First Name', 'Last Name',
+                     'To', 'Amount', 'Service', 'Date', 'Time'])
 
     for transaction in Transaction.objects.select_related('by', 'to', 'service').filter(by=request.user).values_list('by__username', 'by__first_name', 'by__last_name', 'to__business_name', 'amount', 'service__name', 'date', 'time'):
         writer.writerow(transaction)
@@ -230,15 +242,16 @@ def individual_analysis(request):
 
     fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Day", 'y': 'Amount'})
     daywise = fig.to_html(full_html=False)
-
-
-    #service_wise_spendings
+    
+    
+    # service_wise_spendings
     x1_data = []
     y1_data = []
-  
-    transactions_individual = Transaction.objects.select_related('by', 'to', 'service').filter(by=request.user).values_list('by__username', 'to__business_name', 'amount', 'service__name', 'date', 'time').order_by('date')
-    
-    service_wise_earning ={}
+
+    transactions_individual = Transaction.objects.select_related('by', 'to', 'service').filter(by=request.user).values_list(
+        'by__username', 'to__business_name', 'amount', 'service__name', 'date', 'time').order_by('date')
+
+    service_wise_earning = {}
 
     for transaction in transactions_individual:
         if transaction[3] not in service_wise_earning.keys():
@@ -251,17 +264,18 @@ def individual_analysis(request):
 
     fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Service", 'y': 'Amount'})
     service_spending = fig.to_html(full_html=False)
-
-
-    #month_wise_earning
-    month_wise_earning ={}
+    
+    
+    # month_wise_earning
+    month_wise_earning = {}
 
     for transaction in transactions_individual:
-        month_name = datetime.date(2020, transaction[4].month, 1).strftime('%B')
-        if month_name not in month_wise_earning.keys(): 
+        month_name = datetime.date(
+            2020, transaction[4].month, 1).strftime('%B')
+        if month_name not in month_wise_earning.keys():
             month_wise_earning[month_name] = transaction[2]
         else:
-            month_wise_earning[month_name] += transaction[2]        
+            month_wise_earning[month_name] += transaction[2]
 
     x1_data = list(month_wise_earning.keys())
     y1_data = list(month_wise_earning.values())
@@ -269,8 +283,7 @@ def individual_analysis(request):
     fig = px.bar(x=x1_data, y=y1_data, labels={'x': "Month", 'y': 'Amount'})
     month_spending = fig.to_html(full_html=False)
 
-
-
+    
     # payments_day_wise
     x1_data = []
     y1_data = []
@@ -291,7 +304,7 @@ def individual_analysis(request):
     fig = px.line(x=x1_data, y=y1_data, labels={'x': "Day", 'y': 'Times'})
     service_per_month = fig.to_html(full_html=False)
 
-
+    
     # consumption_service_wise
     x1_data = []
     y1_data = []
@@ -316,30 +329,29 @@ def individual_analysis(request):
     number_times_service = fig.to_html(full_html=False)
 
     messages.success(request, "Welcome to the analysis page!")
-    logged_in_user = User.objects.filter(username=request.user.username).first()
+    logged_in_user = request.user
     return render(request, 'individual_analysis.html', {'daywise': daywise,
                                                         'service_per_month': service_per_month,
-                                                        'service_spending' :service_spending,
-                                                        'month_spending' : month_spending,
+                                                        'service_spending': service_spending,
+                                                        'month_spending': month_spending,
                                                         'number_times_service': number_times_service,
                                                         'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance, 'credit_num': logged_in_user.credit_number, 'debit_num': logged_in_user.debit_number})
 
 
-
 @login_required
 def customer_profile(request):
-    #For rendering customer profile
+    # For rendering customer profile
 
-    logged_in_user = User.objects.filter(
-        username=request.user.username).first()
-    return render(request, 'individual_profile.html', {'logged_in_user': logged_in_user})
+    logged_in_user = request.user
+    return render(request, 'individual_profile.html', {'logged_in_user': logged_in_user, 'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
 
 
 @login_required
 def about_individual(request):
     # About individual
 
-    return render(request, 'about_individual.html')
+    logged_in_user = request.user
+    return render(request, 'about_individual.html', {'balance': logged_in_user.wallet, 'credit_bal': logged_in_user.credit_balance, 'debit_bal': logged_in_user.debit_balance})
 
 
 def error_400(request, exception):

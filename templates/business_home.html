@@ -2,9 +2,9 @@
 {% block content %}
 <!-- {% load static %} -->
 <h2>Business Home</h2>
-
+<hr>
 <div style="margin-left:1.5rem;">
-    Services subscribed:<br><hr>
+    <h3>Services subscribed:</h3><hr>
     <br>
     <form action="/business/service_add/" method="post"> 
     {% csrf_token %}
@@ -24,20 +24,24 @@
   </div>
 
     {% for ser in services %}
-    <div class="card" style="width: 18rem; margin-left:20px; margin-top: 10px;">
-      <img src="{{ser.image.url}}" class="card-img-top border border-success img-thumbnail" alt="Image not found" height="200" width="200" >
-      <div class="card-body">
-        <h5 class="card-title"> Price {{ ser.price.price}}</h5>
-        <p class="card-text">{{ser.name}} {{ser.description}}</p>
+    <div class="card mb-3 d-flex justify-content-center">
+      <img src="{{ser.image.url}}" style="margin: 20px auto;" class=" border border-success " alt="Image not found" height="200px" width="300px" >
+      <div class="card-body d-flex flex-column align-items-center" style="overflow-wrap: anywhere;">
+        <h5 class="card-title text-xl"> Service Name: {{ser.name}}</h5>
+        <h5 class="card-title text-xl"> Price:  {{ ser.price.price}}</h5>
+        <p class="card-text text-center text-md">Service Description:  {{ser.description}}</p>
+        <p class="card-text text-center text-lg">Payment Link For Wallet: <br> http://127.0.0.1:8000/pay_link/?service_name={{ser.name}}&service_owner={{ user.username }}&service_price={{ ser.price }}&payment_type=wallet</p>
+        <p class="card-text text-center text-lg">Payment Link For Credit Card: <br> http://127.0.0.1:8000/pay_link/?service_name={{ser.name}}&service_owner={{ user.username }}&service_price={{ ser.price }}&payment_type=credit</p>
+        <p class="card-text text-center text-lg">Payment Link For Debit Card: <br> http://127.0.0.1:8000/pay_link/?service_name={{ser.name}}&service_owner={{ user.username }}&service_price={{ ser.price }}&payment_type=debit</p>
+        
 
-        <form action="/business/price_change/" method="post"> 
+        <form action="/business/price_change/" method="post" class="text-center"> 
           {% csrf_token %}
             <div class="form-group">
-              <h5 class="card-title" name = "service">{{ser.name}}</h5>
               <input type="hidden" name="service" value="{{ser.name}}" />
               <input type="number" name="price">
             </div>
-            <button type="submit" class="btn btn-success">change</button>
+            <button type="submit" class="btn btn-success">Change Price</button>
           </form>  
 
 

@@ -23,6 +23,14 @@
 
 <body class="bg-gradient-primary">
 
+   {% if messages %}
+        {% for msg in messages %}
+            <div class="alert alert-info alert-dismissable">
+                {{msg.message}}
+            </div>
+        {% endfor %}
+    {% endif %}
+
   <div class="container">
 
     <div class="card o-hidden border-0 shadow-lg my-5">
